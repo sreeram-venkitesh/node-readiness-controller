@@ -374,7 +374,7 @@ The controller requires the following RBAC permissions:
 
 - **Memory Usage**: ~64MB base + ~1KB per node + ~2KB per rule
 - **CPU Usage**: Minimal during steady state, scales with node/rule change frequency
-- **Node Scale**: Tested up to 1000 nodes
+- **Node Scale**: Tested up to 100 nodes using kwok (1k nodes in progress)
 - **Rule Scale**: Recommended maximum 50 rules per cluster
 
 ### Integration Patterns
@@ -383,7 +383,7 @@ The controller requires the following RBAC permissions:
 ```yaml
 # NPD checks and sets conditions, controller manages taints
 conditions:
-  - type: "node.kubernetes.io/NetworkUnavailable"  # Set by NPD
+  - type: "readiness.k8s.io/NetworkReady"  # Set by NPD
     requiredStatus: "False"
 ```
 
@@ -391,14 +391,14 @@ conditions:
 ```yaml
 # Your daemonset sets custom conditions
 conditions:
-  - type: "mycompany.io/DatabaseReady"
+  - type: "readiness.k8s.io/mycompany.example.com/DatabaseReady"
     requiredStatus: "True"
-  - type: "mycompany.io/CacheWarmed"
+  - type: "readiness.k8s.io/mycompany.example.com/CacheWarmed"
     requiredStatus: "True"
 ```
 
 #### With Cluster Autoscaler
-Bootstrap-only rules work well with cluster autoscaling:
+NRG controller work well with cluster autoscaling:
 - New nodes start with restrictive taints
 - Controller removes taints once conditions are satisfied
 - Autoscaler can safely scale knowing nodes are truly ready
@@ -461,6 +461,7 @@ kubectl explain nodereadinessgaterule.status
 - [ ] Integration with cluster lifecycle management tools
 - [ ] Enhanced conflict resolution strategies
 - [ ] Performance optimizations for large clusters
+- [ ] Scale testing 1000+ nodes
 
 ## Project Distribution
 
