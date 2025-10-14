@@ -78,7 +78,7 @@ type NodeReadinessGateRuleStatus struct {
 type NodeEvaluation struct {
 	NodeName         string                      `json:"nodeName"`
 	ConditionResults []ConditionEvaluationResult `json:"conditionResults"`
-	TaintAction      string                      `json:"taintAction"` // "add", "remove", "none"
+	TaintStatus      string                      `json:"taintStatus"` // "Present", "Absent", "Unknown"
 	LastEvaluated    metav1.Time                 `json:"lastEvaluated"`
 }
 

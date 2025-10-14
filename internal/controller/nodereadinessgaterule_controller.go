@@ -277,11 +277,9 @@ func (r *ReadinessGateController) evaluateRuleForNode(ctx context.Context, rule 
 	log.Info("Evaluation result", "node", node.Name, "rule", rule.Name,
 		"allConditionsSatisfied", allConditionsSatisfied, "hasTaint", currentlyHasTaint)
 
-	var action string
 	var err error
 
 	if shouldRemoveTaint && currentlyHasTaint {
-		action = "remove"
 		log.Info("Removing taint", "node", node.Name, "rule", rule.Name, "taint", rule.Spec.Taint.Key)
 
 		if err = r.removeTaintBySpec(ctx, node, rule.Spec.Taint); err != nil {
@@ -294,20 +292,26 @@ func (r *ReadinessGateController) evaluateRuleForNode(ctx context.Context, rule 
 		}
 
 	} else if !shouldRemoveTaint && !currentlyHasTaint {
-		action = "add"
 		log.Info("Adding taint", "node", node.Name, "rule", rule.Name, "taint", rule.Spec.Taint.Key)
 
 		if err = r.addTaintBySpec(ctx, node, rule.Spec.Taint); err != nil {
 			return fmt.Errorf("failed to add taint: %w", err)
 		}
 	} else {
-		action = "none"
 		log.Info("No taint action needed", "node", node.Name, "rule", rule.Name,
 			"shouldRemove", shouldRemoveTaint, "hasTaint", currentlyHasTaint)
 	}
 
+	// Determine observed taint status after any actions
+	var taintStatus string
+	if r.hasTaintBySpec(node, rule.Spec.Taint) {
+		taintStatus = "Present"
+	} else {
+		taintStatus = "Absent"
+	}
+
 	// Update evaluation status
-	r.updateNodeEvaluationStatus(rule, node.Name, conditionResults, action)
+	r.updateNodeEvaluationStatus(rule, node.Name, conditionResults, taintStatus)
 
 	return nil
 }

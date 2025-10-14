@@ -188,7 +188,7 @@ func (r *ReadinessGateController) updateNodeEvaluationStatus(
 	rule *readinessv1alpha1.NodeReadinessGateRule,
 	nodeName string,
 	conditionResults []readinessv1alpha1.ConditionEvaluationResult,
-	action string,
+	taintStatus string,
 ) {
 	// Find existing evaluation or create new
 	var nodeEval *readinessv1alpha1.NodeEvaluation
@@ -208,7 +208,7 @@ func (r *ReadinessGateController) updateNodeEvaluationStatus(
 
 	// Update evaluation
 	nodeEval.ConditionResults = conditionResults
-	nodeEval.TaintAction = action
+	nodeEval.TaintStatus = taintStatus
 	nodeEval.LastEvaluated = metav1.Now()
 }
 

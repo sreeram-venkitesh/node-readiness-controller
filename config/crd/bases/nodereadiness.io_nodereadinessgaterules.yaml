@@ -263,13 +263,13 @@ spec:
                       type: string
                     nodeName:
                       type: string
-                    taintAction:
+                    taintStatus:
                       type: string
                   required:
                   - conditionResults
                   - lastEvaluated
                   - nodeName
-                  - taintAction
+                  - taintStatus
                   type: object
                 type: array
               observedGeneration:
