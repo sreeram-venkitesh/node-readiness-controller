@@ -35,16 +35,16 @@ import (
 )
 
 // namespace where the project is deployed in
-const namespace = "nrgcontroller-system"
+const namespace = "nrg-system"
 
 // serviceAccountName created for the project
-const serviceAccountName = "nrgcontroller-controller-manager"
+const serviceAccountName = "nrg-controller-manager"
 
 // metricsServiceName is the name of the metrics service of the project
-const metricsServiceName = "nrgcontroller-controller-manager-metrics-service"
+const metricsServiceName = "nrg-controller-manager-metrics-service"
 
 // metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data
-const metricsRoleBindingName = "nrgcontroller-metrics-binding"
+const metricsRoleBindingName = "nrg-metrics-binding"
 
 var _ = Describe("Manager", Ordered, func() {
 	var controllerPodName string
@@ -74,11 +74,6 @@ var _ = Describe("Manager", Ordered, func() {
 		_, err = utils.Run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to deploy the controller-manager")
 
-		By("removing node selector for e2e testing")
-		cmd = exec.Command("kubectl", "patch", "deployment", "nrgcontroller-controller-manager",
-			"-n", namespace, "--type=json",
-			"-p", `[{"op":"remove","path":"/spec/template/spec/nodeSelector"},{"op":"replace","path":"/spec/template/spec/tolerations","value":[]}]`)
-		_, err = utils.Run(cmd)
 		Expect(err).NotTo(HaveOccurred(), "Failed to patch deployment")
 	})
 
@@ -125,14 +120,14 @@ var _ = Describe("Manager", Ordered, func() {
 				_, _ = fmt.Fprintf(GinkgoWriter, "Failed to get Kubernetes events: %s", err)
 			}
 
-			By("Fetching curl-metrics logs")
-			cmd = exec.Command("kubectl", "logs", "curl-metrics", "-n", namespace)
-			metricsOutput, err := utils.Run(cmd)
-			if err == nil {
-				_, _ = fmt.Fprintf(GinkgoWriter, "Metrics logs:\n %s", metricsOutput)
-			} else {
-				_, _ = fmt.Fprintf(GinkgoWriter, "Failed to get curl-metrics logs: %s", err)
-			}
+			// By("Fetching curl-metrics logs")
+			// cmd = exec.Command("kubectl", "logs", "curl-metrics", "-n", namespace)
+			// metricsOutput, err := utils.Run(cmd)
+			// if err == nil {
+			// 	_, _ = fmt.Fprintf(GinkgoWriter, "Metrics logs:\n %s", metricsOutput)
+			// } else {
+			// 	_, _ = fmt.Fprintf(GinkgoWriter, "Failed to get curl-metrics logs: %s", err)
+			// }
 
 			By("Fetching controller manager pod description")
 			cmd = exec.Command("kubectl", "describe", "pod", controllerPodName, "-n", namespace)
@@ -181,7 +176,6 @@ var _ = Describe("Manager", Ordered, func() {
 			Eventually(verifyControllerUp).Should(Succeed())
 		})
 
-
 		// +kubebuilder:scaffold:e2e-webhooks-checks
 	})
 
@@ -219,9 +213,7 @@ status:
 			Expect(err).NotTo(HaveOccurred())
 
 			By("updating node condition to True")
-			cmd = exec.Command("kubectl", "patch", "node", nodeName, "--type=json", "-p",
-				`[{"op":"replace","path":"/status/conditions/0/status","value":"True"}]`)
-			_, err = utils.Run(cmd)
+			err = patchNodeCondition(nodeName, "TestReady", "True")
 			Expect(err).NotTo(HaveOccurred())
 
 			By("verifying taint is removed")
@@ -245,9 +237,7 @@ status:
 			}, 30*time.Second, 2*time.Second).Should(BeTrue())
 
 			By("updating node condition back to False")
-			cmd = exec.Command("kubectl", "patch", "node", nodeName, "--type=json", "-p",
-				`[{"op":"replace","path":"/status/conditions/0/status","value":"False"}]`)
-			_, err = utils.Run(cmd)
+			err = patchNodeCondition(nodeName, "TestReady", "False")
 			Expect(err).NotTo(HaveOccurred())
 
 			By("verifying taint stays removed (bootstrap-only behavior)")
@@ -303,9 +293,7 @@ status:
 			}, 10*time.Second, 2*time.Second).Should(BeTrue())
 
 			By("updating node condition to False")
-			cmd = exec.Command("kubectl", "patch", "node", nodeName, "--type=json", "-p",
-				`[{"op":"replace","path":"/status/conditions/0/status","value":"False"}]`)
-			_, err = utils.Run(cmd)
+			err = patchNodeCondition(nodeName, "StorageReady", "False")
 			Expect(err).NotTo(HaveOccurred())
 
 			By("verifying taint is added")
@@ -319,9 +307,7 @@ status:
 			}, 30*time.Second, 2*time.Second).Should(BeTrue())
 
 			By("updating node condition back to True")
-			cmd = exec.Command("kubectl", "patch", "node", nodeName, "--type=json", "-p",
-				`[{"op":"replace","path":"/status/conditions/0/status","value":"True"}]`)
-			_, err = utils.Run(cmd)
+			err = patchNodeCondition(nodeName, "StorageReady", "True")
 			Expect(err).NotTo(HaveOccurred())
 
 			By("verifying taint is removed again (continuous enforcement)")
@@ -382,9 +368,7 @@ status:
 			}, 30*time.Second, 2*time.Second).Should(BeTrue())
 
 			By("updating NetworkReady to True, StorageReady stays False")
-			cmd = exec.Command("kubectl", "patch", "node", nodeName, "--type=json", "-p",
-				`[{"op":"replace","path":"/status/conditions/0/status","value":"True"}]`)
-			_, err = utils.Run(cmd)
+			err = patchNodeCondition(nodeName, "NetworkReady", "True")
 			Expect(err).NotTo(HaveOccurred())
 
 			By("verifying taint still present (not all conditions met)")
@@ -398,9 +382,7 @@ status:
 			}, 10*time.Second, 2*time.Second).Should(BeTrue())
 
 			By("updating StorageReady to True as well")
-			cmd = exec.Command("kubectl", "patch", "node", nodeName, "--type=json", "-p",
-				`[{"op":"replace","path":"/status/conditions/1/status","value":"True"}]`)
-			_, err = utils.Run(cmd)
+			err = patchNodeCondition(nodeName, "StorageReady", "True")
 			Expect(err).NotTo(HaveOccurred())
 
 			By("verifying taint is removed (all conditions met)")
@@ -600,4 +582,71 @@ type tokenRequest struct {
 	Status struct {
 		Token string `json:"token"`
 	} `json:"status"`
+}
+
+// nodeStatus represents the node status with conditions
+type nodeStatus struct {
+	Status struct {
+		Conditions []struct {
+			Type               string `json:"type"`
+			Status             string `json:"status"`
+			LastHeartbeatTime  string `json:"lastHeartbeatTime"`
+			LastTransitionTime string `json:"lastTransitionTime"`
+		} `json:"conditions"`
+	} `json:"status"`
+}
+
+// patchNodeCondition updates a specific node condition by type (not by index)
+func patchNodeCondition(nodeName, conditionType, status string) error {
+	// Get current node status
+	cmd := exec.Command("kubectl", "get", "node", nodeName, "-o", "json")
+	output, err := utils.Run(cmd)
+	if err != nil {
+		return fmt.Errorf("failed to get node: %w", err)
+	}
+
+	// Parse the node
+	var node nodeStatus
+	if err := json.Unmarshal([]byte(output), &node); err != nil {
+		return fmt.Errorf("failed to parse node: %w", err)
+	}
+
+	// Find and update the condition by type
+	found := false
+	for i := range node.Status.Conditions {
+		if node.Status.Conditions[i].Type == conditionType {
+			node.Status.Conditions[i].Status = status
+			node.Status.Conditions[i].LastTransitionTime = time.Now().Format(time.RFC3339)
+			found = true
+			break
+		}
+	}
+
+	if !found {
+		// If condition doesn't exist, add it
+		node.Status.Conditions = append(node.Status.Conditions, struct {
+			Type               string `json:"type"`
+			Status             string `json:"status"`
+			LastHeartbeatTime  string `json:"lastHeartbeatTime"`
+			LastTransitionTime string `json:"lastTransitionTime"`
+		}{
+			Type:               conditionType,
+			Status:             status,
+			LastHeartbeatTime:  time.Now().Format(time.RFC3339),
+			LastTransitionTime: time.Now().Format(time.RFC3339),
+		})
+	}
+
+	// Marshal the updated conditions
+	conditionsJSON, err := json.Marshal(node.Status.Conditions)
+	if err != nil {
+		return fmt.Errorf("failed to marshal conditions: %w", err)
+	}
+
+	// Apply the patch using strategic merge
+	patchJSON := fmt.Sprintf(`{"status":{"conditions":%s}}`, string(conditionsJSON))
+	cmd = exec.Command("kubectl", "patch", "node", nodeName,
+		"--type=strategic", "--subresource=status", "-p", patchJSON)
+	_, err = utils.Run(cmd)
+	return err
 }
