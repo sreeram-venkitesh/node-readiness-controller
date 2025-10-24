@@ -31,7 +31,8 @@ spec:
         app.kubernetes.io/name: nrgcontroller
     spec:
       # TODO(user): Uncomment the following code to configure the nodeAffinity expression
-      # according to the platforms which are supported by your solution.
+      # The manager is deployed on control-plane nodes by default. Modify the nodeAffinity rules
+      # according to your cluster preference and the platforms which are supported by your solution.
       # It is considered best practice to support multiple architectures. You can
       # build your manager image using the makefile target docker-buildx.
       # affinity:
@@ -50,13 +51,15 @@ spec:
       #             operator: In
       #             values:
       #               - linux
+      #           - key: reserved-for
+      #             operator: In
+      #             values:
+      #               - platform    # Modify this value based on your platform node labels.
       nodeSelector:
-        reserved-for: platform
+        "node-role.kubernetes.io/control-plane": ""
       tolerations:
-      - key: "node-restriction.kubernetes.io/reserved-for"
-        operator: "Equal"
-        value: "platform"
-        effect: "NoExecute"
+      - key: "node-role.kubernetes.io/control-plane"
+        operator: "Exists"
       securityContext:
         # Projects are configured by default to adhere to the "restricted" Pod Security Standards.
         # This ensures that deployments meet the highest security requirements for Kubernetes.
