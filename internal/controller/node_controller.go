@@ -24,6 +24,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/util/retry"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -75,6 +76,12 @@ func (r *ReadinessGateController) processNodeAgainstAllRules(ctx context.Context
 	log.Info("Processing node against rules", "node", node.Name, "ruleCount", len(applicableRules))
 
 	for _, rule := range applicableRules {
+		log.V(4).Info("Processing rule from cache",
+			"node", node.Name,
+			"rule", rule.Name,
+			"resourceVersion", rule.ResourceVersion,
+			"generation", rule.Generation)
+
 		// Skip if bootstrap-only and already completed
 		if r.isBootstrapCompleted(node.Name, rule.Name) && rule.Spec.EnforcementMode == readinessv1alpha1.EnforcementModeBootstrapOnly {
 			log.Info("Skipping bootstrap-only rule - already completed",
@@ -89,7 +96,11 @@ func (r *ReadinessGateController) processNodeAgainstAllRules(ctx context.Context
 			continue
 		}
 
-		log.Info("Evaluating rule for node", "node", node.Name, "rule", rule.Name)
+		log.Info("Evaluating rule for node",
+			"node", node.Name,
+			"rule", rule.Name,
+			"ruleResourceVersion", rule.ResourceVersion)
+
 		if err := r.evaluateRuleForNode(ctx, rule, node); err != nil {
 			log.Error(err, "Failed to evaluate rule for node",
 				"node", node.Name, "rule", rule.Name)
@@ -98,10 +109,22 @@ func (r *ReadinessGateController) processNodeAgainstAllRules(ctx context.Context
 		}
 
 		// Persist the rule status
+		log.V(4).Info("Attempting to persist rule status",
+			"node", node.Name,
+			"rule", rule.Name,
+			"resourceVersion", rule.ResourceVersion)
+
 		if err := r.updateRuleStatus(ctx, rule); err != nil {
 			log.Error(err, "Failed to update rule status after node evaluation",
-				"node", node.Name, "rule", rule.Name)
+				"node", node.Name,
+				"rule", rule.Name,
+				"resourceVersion", rule.ResourceVersion)
 			// continue with other rules
+		} else {
+			log.V(4).Info("Successfully persisted rule status from node reconciler",
+				"node", node.Name,
+				"rule", rule.Name,
+				"newResourceVersion", rule.ResourceVersion)
 		}
 	}
 
@@ -168,22 +191,32 @@ func (r *ReadinessGateController) isBootstrapCompleted(nodeName, ruleName string
 func (r *ReadinessGateController) markBootstrapCompleted(ctx context.Context, nodeName, ruleName string) {
 	log := ctrl.LoggerFrom(ctx)
 
-	node := &corev1.Node{}
-	if err := r.Get(ctx, client.ObjectKey{Name: nodeName}, node); err != nil {
-		log.Error(err, "Failed to get node for bootstrap completion", "node", nodeName)
-		return
-	}
-
 	annotationKey := fmt.Sprintf("readiness.k8s.io/bootstrap-completed-%s", ruleName)
 
-	// Initialize annotations if nil
-	if node.Annotations == nil {
-		node.Annotations = make(map[string]string)
-	}
+	// retry to handle conflict with concurrent node updates
+	err := retry.RetryOnConflict(retry.DefaultRetry, func() error {
+		node := &corev1.Node{}
+		if err := r.Get(ctx, client.ObjectKey{Name: nodeName}, node); err != nil {
+			return err
+		}
 
-	node.Annotations[annotationKey] = "true"
+		// Check if already marked to avoid unnecessary updates
+		if node.Annotations != nil {
+			if _, exists := node.Annotations[annotationKey]; exists {
+				return nil
+			}
+		}
 
-	if err := r.Update(ctx, node); err != nil {
+		// Initialize annotations if nil
+		if node.Annotations == nil {
+			node.Annotations = make(map[string]string)
+		}
+
+		node.Annotations[annotationKey] = "true"
+		return r.Update(ctx, node)
+	})
+
+	if err != nil {
 		log.Error(err, "Failed to mark bootstrap completed", "node", nodeName, "rule", ruleName)
 	} else {
 		log.Info("Marked bootstrap completed", "node", nodeName, "rule", ruleName)
