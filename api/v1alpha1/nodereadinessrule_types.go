@@ -107,6 +107,8 @@ type DryRunResults struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:scope=Cluster,shortName=nrr
+// +kubebuilder:printcolumn:name="Mode",type=string,JSONPath=`.spec.enforcementMode`,description="Continuous, Bootstrap or Dryrun - shows if the rule is in enforcement or audit mode."
+// +kubebuilder:printcolumn:name="Taint",type=string,JSONPath=`.spec.taint.key`,description="The readiness taint applied by this rule."
 
 // NodeReadinessRule is the Schema for the NodeReadinessRules API
 type NodeReadinessRule struct {
