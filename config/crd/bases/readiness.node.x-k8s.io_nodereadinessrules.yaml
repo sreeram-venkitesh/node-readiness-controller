@@ -18,7 +18,7 @@ spec:
   versions:
   - additionalPrinterColumns:
     - description: Continuous, Bootstrap or Dryrun - shows if the rule is in enforcement
-        or audit mode.
+        or dryrun mode.
       jsonPath: .spec.enforcementMode
       name: Mode
       type: string
@@ -26,6 +26,10 @@ spec:
       jsonPath: .spec.taint.key
       name: Taint
       type: string
+    - description: The age of this resource
+      jsonPath: .metadata.creationTimestamp
+      name: Age
+      type: date
     name: v1alpha1
     schema:
       openAPIV3Schema:
