@@ -147,6 +147,10 @@ lint-api-fix: $(GOLANGCI_LINT_KAL)
 lint-config: $(GOLANGCI_LINT) ## Verify golangci-lint linter configuration
 	$(GOLANGCI_LINT) config verify
 
+.PHONY: verify
+verify: ## Run all verification scripts.
+	 ./hack/verify-all.sh
+
 ## --------------------------------------
 ## Build
 ## --------------------------------------
