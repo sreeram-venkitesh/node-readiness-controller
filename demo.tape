@@ -14,10 +14,10 @@ Set TypingSpeed 35ms
 # --- SETUP ---
 Hide
 # Expect the kind cluster is already created following docs/TEST_README.md
-Type "kubectl config use-context kind-nrg-test"
+Type "kubectl config use-context kind-nrr-test"
 Enter
 # Ensure the node starts in a "Tainted" state (Condition False -> Taint Present)
-Type "./hack/test-workloads/flip-node-condition.sh nrg-test-worker network.k8s.io/CalicoReady false"
+Type "./hack/test-workloads/flip-node-condition.sh nrr-test-worker network.k8s.io/CalicoReady false"
 Enter
 Type "clear"
 Enter
@@ -40,7 +40,7 @@ Type "# NodeReadiness controller installed on control-plane node"
 Show
 Sleep 2s
 Enter
-Type "kubectl get deploy -n nrg-system"
+Type "kubectl get deploy -n nrr-system"
 Enter
 Sleep 2s
 
@@ -51,7 +51,7 @@ Type "# 2. Worker node has a Taint 'readiness.k8s.io/NetworkReady' because Calic
 Show
 Sleep 2s
 Enter
-Type@15ms `kubectl get node nrg-test-worker -o custom-columns="NAME:.metadata.name,STATUS:.status.conditions[?(@.type=='network.k8s.io/CalicoReady')].status,TAINTS:.spec.taints[*].key"`
+Type@15ms `kubectl get node nrr-test-worker -o custom-columns="NAME:.metadata.name,STATUS:.status.conditions[?(@.type=='network.k8s.io/CalicoReady')].status,TAINTS:.spec.taints[*].key"`
 Enter 1
 Sleep 3s
 
@@ -73,7 +73,7 @@ Type "# 4. Simulate the CNI plugin reporting 'Ready' status"
 Show
 Sleep 2s
 Enter
-Type@15ms "./hack/test-workloads/flip-node-condition.sh nrg-test-worker network.k8s.io/CalicoReady true"
+Type@15ms "./hack/test-workloads/flip-node-condition.sh nrr-test-worker network.k8s.io/CalicoReady true"
 Enter 1
 Sleep 4s
 
@@ -84,7 +84,7 @@ Type "# 5. NodeReadiness controller on observing the expected status change will
 Show
 Sleep 2s
 Enter
-Type@15ms `kubectl get node nrg-test-worker -o custom-columns="NAME:.metadata.name,STATUS:.status.conditions[?(@.type=='network.k8s.io/CalicoReady')].status,TAINTS:.spec.taints[*].key"`
+Type@15ms `kubectl get node nrr-test-worker -o custom-columns="NAME:.metadata.name,STATUS:.status.conditions[?(@.type=='network.k8s.io/CalicoReady')].status,TAINTS:.spec.taints[*].key"`
 Enter 2
 Sleep 2s
 Type "# Success! The Controller automatically removed the managed taint and node is ready for workloads"

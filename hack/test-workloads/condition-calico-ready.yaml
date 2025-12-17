@@ -1,7 +1,7 @@
 # Sample condition file for the update-node-conditions.sh script.
 #
 # This condition simulates the Calico CNI becoming ready on a node.
-# The nrg-controller should watch for this condition and remove the
+# The nrr-controller should watch for this condition and remove the
 # corresponding taint when the status becomes "True".
 #
 type: "network.k8s.io/CalicoReady"

@@ -382,7 +382,7 @@ rules:
 
 ## Future Extensions
 
-### Planned Features (via nrgctl)
+### Planned Features (via nrrctl)
 - Interactive rule management
 - Hard rollback capabilities
 - Rule version control and history

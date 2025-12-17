@@ -35,16 +35,16 @@ import (
 )
 
 // namespace where the project is deployed in
-const namespace = "nrg-system"
+const namespace = "nrr-system"
 
 // serviceAccountName created for the project
-const serviceAccountName = "nrg-controller-manager"
+const serviceAccountName = "nrr-controller-manager"
 
 // metricsServiceName is the name of the metrics service of the project
-const metricsServiceName = "nrg-controller-manager-metrics-service"
+const metricsServiceName = "nrr-controller-manager-metrics-service"
 
 // metricsRoleBindingName is the name of the RBAC that will be created to allow get the metrics data
-const metricsRoleBindingName = "nrg-metrics-binding"
+const metricsRoleBindingName = "nrr-metrics-binding"
 
 var _ = Describe("Manager", Ordered, func() {
 	var controllerPodName string

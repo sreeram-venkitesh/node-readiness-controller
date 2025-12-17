@@ -51,7 +51,7 @@ var (
 // CertManager.
 func TestE2E(t *testing.T) {
 	RegisterFailHandler(Fail)
-	_, _ = fmt.Fprintf(GinkgoWriter, "Starting nrgcontroller integration test suite\n")
+	_, _ = fmt.Fprintf(GinkgoWriter, "Starting nrrcontroller integration test suite\n")
 	RunSpecs(t, "e2e suite")
 }
 

@@ -62,7 +62,7 @@ done
 start_index=$(($highest_index + 1))
 end_index=$(($highest_index + $COUNT))
 for i in $(seq $start_index $end_index); do
-    # Use nrg-test-worker2 as the template for all new worker nodes.
+    # Use nrr-test-worker2 as the template for all new worker nodes.
     # This ensures they get the correct labels and taints.
     TEMPLATE_NODE_NAME="$CLUSTER_NAME-worker2"
     NEW_NODE_NAME="$CLUSTER_NAME-worker$i"

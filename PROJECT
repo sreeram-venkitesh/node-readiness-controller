@@ -6,7 +6,7 @@ cliVersion: 4.9.0
 domain: readiness.node.x-k8s.io
 layout:
 - go.kubebuilder.io/v4
-projectName: nrgcontroller
+projectName: nrrcontroller
 repo: sigs.k8s.io/node-readiness-controller
 resources:
 - api:

@@ -5,7 +5,7 @@
 1. **Rule conflicts**: Multiple rules targeting the same taint key
    ```sh
    # Check validation webhook logs
-   kubectl logs -n nrgcontroller-system deployment/nrgcontroller-controller-manager | grep webhook
+   kubectl logs -n nrrcontroller-system deployment/nrrcontroller-controller-manager | grep webhook
    ```
 
 2. **Missing node conditions**: Rules waiting for conditions that don't exist
@@ -20,10 +20,10 @@
 3. **RBAC issues**: Controller can't update nodes or rules
    ```sh
    # Check controller logs for permission errors
-   kubectl logs -n nrgcontroller-system deployment/nrgcontroller-controller-manager
+   kubectl logs -n nrrcontroller-system deployment/nrrcontroller-controller-manager
 
    # Verify RBAC
-   kubectl describe clusterrole nrgcontroller-manager-role
+   kubectl describe clusterrole nrrcontroller-manager-role
    ```
 
 ### Bootstrap Completion Tracking
@@ -42,8 +42,8 @@ kubectl get node <node-name> -o jsonpath='{.metadata.annotations}'
 Check that the controller is running:
 
 ```sh
-kubectl get pods -n nrgcontroller-system
-kubectl logs -n nrgcontroller-system deployment/nrgcontroller-controller-manager
+kubectl get pods -n nrrcontroller-system
+kubectl logs -n nrrcontroller-system deployment/nrrcontroller-controller-manager
 ```
 
 Verify CRDs are installed:
@@ -59,6 +59,6 @@ Enable verbose logging:
 
 ```sh
 # Edit controller deployment to add debug flags
-kubectl patch deployment -n nrgcontroller-system nrgcontroller-controller-manager \
+kubectl patch deployment -n nrrcontroller-system nrrcontroller-controller-manager \
   -p '{"spec":{"template":{"spec":{"containers":[{"name":"manager","args":["--zap-log-level=debug"]}]}}}}'
 ```

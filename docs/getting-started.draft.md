@@ -50,7 +50,7 @@ spec:
 **Build and push your image to the location specified by `IMG`:**
 
 ```sh
-make docker-build docker-push IMG=<some-registry>/nrg-controller:tag
+make docker-build docker-push IMG=<some-registry>/nrr-controller:tag
 ```
 
 #### Option 1: Deploy Using Make Commands
@@ -60,7 +60,7 @@ make docker-build docker-push IMG=<some-registry>/nrg-controller:tag
 make install
 
 # Deploy the controller
-make deploy IMG=<some-registry>/nrg-controller:tag
+make deploy IMG=<some-registry>/nrr-controller:tag
 
 # Create sample rules
 kubectl apply -k examples/network-readiness-rule.yaml
