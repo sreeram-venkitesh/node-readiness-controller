@@ -152,7 +152,7 @@ var _ = Describe("Node Controller", func() {
 					Conditions: []nodereadinessiov1alpha1.ConditionRequirement{
 						{Type: conditionType, RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: nodereadinessiov1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    taintKey,
 						Effect: corev1.TaintEffectNoSchedule,
 					},

@@ -84,7 +84,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 					Conditions: []nodereadinessiov1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: nodereadinessiov1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "test-taint",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -121,7 +121,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 					Conditions: []nodereadinessiov1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: nodereadinessiov1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "test-taint",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -181,7 +181,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 					Conditions: []nodereadinessiov1alpha1.ConditionRequirement{
 						{Type: "TestCondition", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: nodereadinessiov1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "immediate-test-taint",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -237,7 +237,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 					Conditions: []nodereadinessiov1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: nodereadinessiov1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "dry-run-taint",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -254,14 +254,14 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 			Expect(err).NotTo(HaveOccurred())
 
 			// Verify dry run results are populated
-			Eventually(func() *nodereadinessiov1alpha1.DryRunResults {
+			Eventually(func() nodereadinessiov1alpha1.DryRunResults {
 				updatedRule := &nodereadinessiov1alpha1.NodeReadinessRule{}
 				err := k8sClient.Get(ctx, types.NamespacedName{Name: "dry-run-rule"}, updatedRule)
 				if err != nil {
-					return nil
+					return nodereadinessiov1alpha1.DryRunResults{}
 				}
 				return updatedRule.Status.DryRunResults
-			}).ShouldNot(BeNil())
+			}).ShouldNot(BeZero())
 
 			// Cleanup
 			Expect(k8sClient.Delete(ctx, rule)).To(Succeed())
@@ -306,7 +306,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 					Conditions: []nodereadinessiov1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: nodereadinessiov1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "node-test-taint",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -367,7 +367,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 				},
 			}
 
-			taintSpec := nodereadinessiov1alpha1.TaintSpec{
+			taintSpec := corev1.Taint{
 				Key:    "test-key",
 				Effect: corev1.TaintEffectNoSchedule,
 			}
@@ -376,7 +376,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 			Expect(hasTaint).To(BeTrue())
 
 			// Test non-existent taint
-			nonExistentTaint := nodereadinessiov1alpha1.TaintSpec{
+			nonExistentTaint := corev1.Taint{
 				Key:    "missing-key",
 				Effect: corev1.TaintEffectNoSchedule,
 			}
@@ -469,7 +469,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: "db-rule"},
 				Spec: nodereadinessiov1alpha1.NodeReadinessRuleSpec{
 					Conditions:      []nodereadinessiov1alpha1.ConditionRequirement{{Type: "DBReady", RequiredStatus: corev1.ConditionTrue}},
-					Taint:           nodereadinessiov1alpha1.TaintSpec{Key: "db-unready", Effect: corev1.TaintEffectNoSchedule},
+					Taint:           corev1.Taint{Key: "db-unready", Effect: corev1.TaintEffectNoSchedule},
 					EnforcementMode: nodereadinessiov1alpha1.EnforcementModeContinuous,
 					NodeSelector:    &metav1.LabelSelector{MatchLabels: map[string]string{"app": "backend"}},
 				},
@@ -522,7 +522,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: "new-node-rule"},
 				Spec: nodereadinessiov1alpha1.NodeReadinessRuleSpec{
 					Conditions:      []nodereadinessiov1alpha1.ConditionRequirement{{Type: "TestReady", RequiredStatus: corev1.ConditionTrue}},
-					Taint:           nodereadinessiov1alpha1.TaintSpec{Key: "test-unready", Effect: corev1.TaintEffectNoSchedule},
+					Taint:           corev1.Taint{Key: "test-unready", Effect: corev1.TaintEffectNoSchedule},
 					EnforcementMode: nodereadinessiov1alpha1.EnforcementModeContinuous,
 					NodeSelector:    &metav1.LabelSelector{MatchLabels: map[string]string{"node-group": "new-workers"}},
 				},
@@ -602,7 +602,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: "cleanup-rule"},
 				Spec: nodereadinessiov1alpha1.NodeReadinessRuleSpec{
 					Conditions:      []nodereadinessiov1alpha1.ConditionRequirement{{Type: "TestReady", RequiredStatus: corev1.ConditionTrue}},
-					Taint:           nodereadinessiov1alpha1.TaintSpec{Key: "cleanup-taint", Effect: corev1.TaintEffectNoSchedule},
+					Taint:           corev1.Taint{Key: "cleanup-taint", Effect: corev1.TaintEffectNoSchedule},
 					EnforcementMode: nodereadinessiov1alpha1.EnforcementModeContinuous,
 				},
 			}
@@ -679,7 +679,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 				ObjectMeta: metav1.ObjectMeta{Name: "delete-node-rule"},
 				Spec: nodereadinessiov1alpha1.NodeReadinessRuleSpec{
 					Conditions:      []nodereadinessiov1alpha1.ConditionRequirement{{Type: "Ready", RequiredStatus: corev1.ConditionTrue}},
-					Taint:           nodereadinessiov1alpha1.TaintSpec{Key: "unready", Effect: corev1.TaintEffectNoSchedule},
+					Taint:           corev1.Taint{Key: "unready", Effect: corev1.TaintEffectNoSchedule},
 					EnforcementMode: nodereadinessiov1alpha1.EnforcementModeContinuous,
 				},
 			}
@@ -777,7 +777,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 					Conditions: []nodereadinessiov1alpha1.ConditionRequirement{
 						{Type: "TestReady", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint:           nodereadinessiov1alpha1.TaintSpec{Key: selectorChangeTaintKey, Effect: corev1.TaintEffectNoSchedule},
+					Taint:           corev1.Taint{Key: selectorChangeTaintKey, Effect: corev1.TaintEffectNoSchedule},
 					EnforcementMode: nodereadinessiov1alpha1.EnforcementModeContinuous,
 					NodeSelector: &metav1.LabelSelector{
 						MatchLabels: map[string]string{"env": "prod"},

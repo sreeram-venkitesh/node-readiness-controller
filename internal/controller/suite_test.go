@@ -177,7 +177,7 @@ func getFirstFoundEnvTestBinaryDir() string {
 	return ""
 }
 
-// hasRequiredBinaries checks if the directory contains the essential envtest binaries
+// hasRequiredBinaries checks if the directory contains the essential envtest binaries.
 func hasRequiredBinaries(dir string) bool {
 	requiredBinaries := []string{"kube-apiserver", "etcd", "kubectl"}
 	for _, binary := range requiredBinaries {

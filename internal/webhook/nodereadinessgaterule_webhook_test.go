@@ -84,7 +84,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 							// Missing type and requiredStatus
 						},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "test-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -110,7 +110,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "test-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -131,7 +131,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 						{Type: "NetworkReady", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "test-key",
 						Effect: corev1.TaintEffectNoSchedule,
 						Value:  "pending",
@@ -159,7 +159,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "conflict-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -181,7 +181,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "NetworkReady", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "conflict-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -204,7 +204,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "same-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -226,7 +226,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "NetworkReady", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "same-key",
 						Effect: corev1.TaintEffectNoExecute, // Different effect
 					},
@@ -246,7 +246,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "update-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -335,7 +335,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "create-test-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -369,7 +369,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "update-test-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -416,7 +416,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "Ready", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "comprehensive-key",
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -438,7 +438,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "NetworkReady", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "different-key", // No conflict
 						Effect: corev1.TaintEffectNoSchedule,
 					},
@@ -456,7 +456,7 @@ var _ = Describe("NodeReadinessRule Validation Webhook", func() {
 					Conditions: []readinessv1alpha1.ConditionRequirement{
 						{Type: "StorageReady", RequiredStatus: corev1.ConditionTrue},
 					},
-					Taint: readinessv1alpha1.TaintSpec{
+					Taint: corev1.Taint{
 						Key:    "comprehensive-key", // Conflicts with existing
 						Effect: corev1.TaintEffectNoSchedule,
 					},

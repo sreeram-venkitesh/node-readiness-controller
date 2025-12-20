@@ -31,12 +31,12 @@ import (
 	readinessv1alpha1 "sigs.k8s.io/node-readiness-controller/api/v1alpha1"
 )
 
-// NodeReadinessRuleWebhook validates NodeReadinessRule resources
+// NodeReadinessRuleWebhook validates NodeReadinessRule resources.
 type NodeReadinessRuleWebhook struct {
 	client.Client
 }
 
-// NewNodeReadinessRuleWebhook creates a new webhook
+// NewNodeReadinessRuleWebhook creates a new webhook.
 func NewNodeReadinessRuleWebhook(c client.Client) *NodeReadinessRuleWebhook {
 	return &NodeReadinessRuleWebhook{
 		Client: c,
@@ -45,7 +45,7 @@ func NewNodeReadinessRuleWebhook(c client.Client) *NodeReadinessRuleWebhook {
 
 // +kubebuilder:webhook:path=/validate-nodereadiness-io-v1alpha1-nodereadinessrule,mutating=false,failurePolicy=fail,sideEffects=None,groups=readiness.node.x-k8s.io,resources=nodereadinessrules,verbs=create;update,versions=v1alpha1,name=vnodereadinessrule.kb.io,admissionReviewVersions=v1
 
-// validateNodeReadinessRule performs validation logic
+// validateNodeReadinessRule performs validation logic.
 func (w *NodeReadinessRuleWebhook) validateNodeReadinessRule(ctx context.Context, rule *readinessv1alpha1.NodeReadinessRule, isUpdate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
@@ -58,7 +58,7 @@ func (w *NodeReadinessRuleWebhook) validateNodeReadinessRule(ctx context.Context
 	return allErrs
 }
 
-// validateSpec validates the spec fields
+// validateSpec validates the spec fields.
 func (w *NodeReadinessRuleWebhook) validateSpec(spec readinessv1alpha1.NodeReadinessRuleSpec) field.ErrorList {
 	var allErrs field.ErrorList
 	specField := field.NewPath("spec")
@@ -100,7 +100,7 @@ func (w *NodeReadinessRuleWebhook) validateSpec(spec readinessv1alpha1.NodeReadi
 	return allErrs
 }
 
-// validateTaintConflicts checks for conflicting rules with the same taint key
+// validateTaintConflicts checks for conflicting rules with the same taint key.
 func (w *NodeReadinessRuleWebhook) validateTaintConflicts(ctx context.Context, rule *readinessv1alpha1.NodeReadinessRule, isUpdate bool) field.ErrorList {
 	var allErrs field.ErrorList
 
@@ -123,7 +123,6 @@ func (w *NodeReadinessRuleWebhook) validateTaintConflicts(ctx context.Context, r
 		// Check for same taint key and effect
 		if existingRule.Spec.Taint.Key == rule.Spec.Taint.Key &&
 			existingRule.Spec.Taint.Effect == rule.Spec.Taint.Effect {
-
 			// Check if node selectors overlap
 			if w.nodSelectorsOverlap(rule.Spec.NodeSelector, existingRule.Spec.NodeSelector) {
 				allErrs = append(allErrs, field.Invalid(
@@ -139,7 +138,7 @@ func (w *NodeReadinessRuleWebhook) validateTaintConflicts(ctx context.Context, r
 	return allErrs
 }
 
-// nodeSelectorsOverlap checks if two node selectors overlap
+// nodeSelectorsOverlap checks if two node selectors overlap.
 func (w *NodeReadinessRuleWebhook) nodSelectorsOverlap(selector1, selector2 *metav1.LabelSelector) bool {
 	// If either selector is nil, it matches all nodes - so they overlap
 	if selector1 == nil || selector2 == nil {
@@ -160,7 +159,7 @@ func (w *NodeReadinessRuleWebhook) nodSelectorsOverlap(selector1, selector2 *met
 	return sel1.String() == sel2.String()
 }
 
-// SetupWithManager sets up the webhook with the manager
+// SetupWithManager sets up the webhook with the manager.
 func (w *NodeReadinessRuleWebhook) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewWebhookManagedBy(mgr).
 		For(&readinessv1alpha1.NodeReadinessRule{}).
@@ -168,7 +167,7 @@ func (w *NodeReadinessRuleWebhook) SetupWithManager(mgr ctrl.Manager) error {
 		Complete()
 }
 
-// Implement the admission.CustomValidator interface
+// Implement the admission.CustomValidator interface.
 var _ webhook.CustomValidator = &NodeReadinessRuleWebhook{}
 
 func (w *NodeReadinessRuleWebhook) ValidateCreate(ctx context.Context, obj runtime.Object) (admission.Warnings, error) {
