@@ -13,12 +13,12 @@ import (
 
 func TestCheckHealth(t *testing.T) {
 	tests := []struct {
-		name           string
-		status         int
-		responseBody   string
-		wantHealthy    bool
-		wantReason     string
-		expectError    bool
+		name         string
+		status       int
+		responseBody string
+		wantHealthy  bool
+		wantReason   string
+		expectError  bool
 	}{
 		{
 			name:        "Healthy",
@@ -39,7 +39,7 @@ func TestCheckHealth(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.WriteHeader(tt.status)
-				w.Write([]byte(tt.responseBody))
+				_, _ = w.Write([]byte(tt.responseBody))
 			}))
 			defer server.Close()
 
@@ -70,11 +70,11 @@ func TestUpdateNodeCondition(t *testing.T) {
 	conditionType := "TestCondition"
 
 	tests := []struct {
-		name           string
-		existingNode   *corev1.Node
-		health         *HealthResponse
-		wantStatus     corev1.ConditionStatus
-		wantReason     string
+		name         string
+		existingNode *corev1.Node
+		health       *HealthResponse
+		wantStatus   corev1.ConditionStatus
+		wantReason   string
 	}{
 		{
 			name: "New Condition Healthy",

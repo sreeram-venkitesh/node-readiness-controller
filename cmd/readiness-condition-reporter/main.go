@@ -98,10 +98,16 @@ func checkHealth(endpoint string) (*HealthResponse, error) {
 			Message: fmt.Sprintf("Failed to reach endpoint %s: %v", endpoint, err),
 		}, nil
 	}
-	defer resp.Body.Close()
+	defer func() {
+		_ = resp.Body.Close()
+	}()
 
 	if resp.StatusCode >= http.StatusOK && resp.StatusCode < http.StatusMultipleChoices {
-		return &HealthResponse{Healthy: true, Reason: "EndpointOK", Message: fmt.Sprintf("Endpoint reports ready at %s", endpoint)}, nil
+		return &HealthResponse{
+			Healthy: true,
+			Reason:  "EndpointOK",
+			Message: fmt.Sprintf("Endpoint reports ready at %s", endpoint),
+		}, nil
 	}
 
 	bodyBytes, err := io.ReadAll(resp.Body)
