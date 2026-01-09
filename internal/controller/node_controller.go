@@ -29,6 +29,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+
 	readinessv1alpha1 "sigs.k8s.io/node-readiness-controller/api/v1alpha1"
 )
 
@@ -37,6 +38,46 @@ type NodeReconciler struct {
 	client.Client
 	Scheme     *runtime.Scheme
 	Controller *ReadinessGateController
+}
+
+// SetupWithManager sets up the controller with the Manager.
+func (r *NodeReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
+	return ctrl.NewControllerManagedBy(mgr).
+		Named("node").
+		For(&corev1.Node{}, builder.WithPredicates(predicate.Funcs{
+			CreateFunc: func(e event.CreateEvent) bool {
+				log := ctrl.LoggerFrom(ctx)
+				n, ok := e.Object.(*corev1.Node)
+				if !ok {
+					log.V(4).Info("Expected Node", "type", fmt.Sprintf("%T", e.Object))
+					return false
+				}
+				log.V(4).Info("NodeReconciler processing node create event", "node", n.GetName())
+				return true
+			},
+			UpdateFunc: func(e event.UpdateEvent) bool {
+				log := ctrl.LoggerFrom(ctx)
+				oldNode := e.ObjectOld.(*corev1.Node)
+				newNode := e.ObjectNew.(*corev1.Node)
+
+				conditionsChanged := !conditionsEqual(oldNode.Status.Conditions, newNode.Status.Conditions)
+				taintsChanged := !taintsEqual(oldNode.Spec.Taints, newNode.Spec.Taints)
+				labelsChanged := !labelsEqual(oldNode.Labels, newNode.Labels)
+
+				shouldReconcile := conditionsChanged || taintsChanged || labelsChanged
+
+				if shouldReconcile {
+					log.V(4).Info("NodeReconciler processing node update event",
+						"node", newNode.Name,
+						"conditionsChanged", conditionsChanged,
+						"taintsChanged", taintsChanged,
+						"labelsChanged", labelsChanged)
+				}
+
+				return shouldReconcile
+			},
+		})).
+		Complete(r)
 }
 
 // +kubebuilder:rbac:groups=core,resources=nodes,verbs=get;list;watch;create;update;patch;delete
@@ -286,104 +327,4 @@ func (r *ReadinessGateController) recordNodeFailure(
 	})
 
 	rule.Status.FailedNodes = failedNodes
-}
-
-// SetupWithManager sets up the controller with the Manager.
-func (r *NodeReconciler) SetupWithManager(ctx context.Context, mgr ctrl.Manager) error {
-	return ctrl.NewControllerManagedBy(mgr).
-		Named("node").
-		For(&corev1.Node{}, builder.WithPredicates(predicate.Funcs{
-			CreateFunc: func(e event.CreateEvent) bool {
-				log := ctrl.LoggerFrom(ctx)
-				n, ok := e.Object.(*corev1.Node)
-				if !ok {
-					log.V(4).Info("Expected Node", "type", fmt.Sprintf("%T", e.Object))
-					return false
-				}
-				log.V(4).Info("NodeReconciler processing node create event", "node", n.GetName())
-				return true
-			},
-			UpdateFunc: func(e event.UpdateEvent) bool {
-				log := ctrl.LoggerFrom(ctx)
-				oldNode := e.ObjectOld.(*corev1.Node)
-				newNode := e.ObjectNew.(*corev1.Node)
-
-				conditionsChanged := !conditionsEqual(oldNode.Status.Conditions, newNode.Status.Conditions)
-				taintsChanged := !taintsEqual(oldNode.Spec.Taints, newNode.Spec.Taints)
-				labelsChanged := !labelsEqual(oldNode.Labels, newNode.Labels)
-
-				shouldReconcile := conditionsChanged || taintsChanged || labelsChanged
-
-				if shouldReconcile {
-					log.V(4).Info("NodeReconciler processing node update event",
-						"node", newNode.Name,
-						"conditionsChanged", conditionsChanged,
-						"taintsChanged", taintsChanged,
-						"labelsChanged", labelsChanged)
-				}
-
-				return shouldReconcile
-			},
-		})).
-		Complete(r)
-}
-
-// conditionsEqual checks if two condition slices are equal.
-func conditionsEqual(a, b []corev1.NodeCondition) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	// Create map for quick lookup
-	aMap := make(map[corev1.NodeConditionType]corev1.ConditionStatus)
-	for _, cond := range a {
-		aMap[cond.Type] = cond.Status
-	}
-
-	for _, cond := range b {
-		if status, exists := aMap[cond.Type]; !exists || status != cond.Status {
-			return false
-		}
-	}
-
-	return true
-}
-
-// taintsEqual checks if two taint slices are equal.
-func taintsEqual(a, b []corev1.Taint) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	// Create map for quick lookup
-	aMap := make(map[string]corev1.Taint)
-	for _, taint := range a {
-		key := taint.Key + string(taint.Effect)
-		aMap[key] = taint
-	}
-
-	for _, taint := range b {
-		key := taint.Key + string(taint.Effect)
-		oldTaint, exists := aMap[key]
-		if !exists || oldTaint.Value != taint.Value {
-			return false
-		}
-	}
-
-	return true
-}
-
-// labelsEqual checks if two label maps are equal.
-func labelsEqual(a, b map[string]string) bool {
-	if len(a) != len(b) {
-		return false
-	}
-
-	for k, v := range a {
-		if b[k] != v {
-			return false
-		}
-	}
-
-	return true
 }
