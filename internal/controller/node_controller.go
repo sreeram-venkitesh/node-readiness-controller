@@ -37,7 +37,7 @@ import (
 type NodeReconciler struct {
 	client.Client
 	Scheme     *runtime.Scheme
-	Controller *ReadinessGateController
+	Controller *RuleReadinessController
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -103,7 +103,7 @@ func (r *NodeReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.
 }
 
 // processNodeAgainstAllRules processes a single node against all applicable rules.
-func (r *ReadinessGateController) processNodeAgainstAllRules(ctx context.Context, node *corev1.Node) {
+func (r *RuleReadinessController) processNodeAgainstAllRules(ctx context.Context, node *corev1.Node) {
 	log := ctrl.LoggerFrom(ctx)
 
 	// Get all known (cached) applicable rules for this node
@@ -220,7 +220,7 @@ func (r *ReadinessGateController) processNodeAgainstAllRules(ctx context.Context
 }
 
 // getConditionStatus gets the status of a condition on a node.
-func (r *ReadinessGateController) getConditionStatus(node *corev1.Node, conditionType string) corev1.ConditionStatus {
+func (r *RuleReadinessController) getConditionStatus(node *corev1.Node, conditionType string) corev1.ConditionStatus {
 	for _, condition := range node.Status.Conditions {
 		if string(condition.Type) == conditionType {
 			return condition.Status
@@ -230,7 +230,7 @@ func (r *ReadinessGateController) getConditionStatus(node *corev1.Node, conditio
 }
 
 // hasTaintBySpec checks if a node has a specific taint.
-func (r *ReadinessGateController) hasTaintBySpec(node *corev1.Node, taintSpec corev1.Taint) bool {
+func (r *RuleReadinessController) hasTaintBySpec(node *corev1.Node, taintSpec corev1.Taint) bool {
 	for _, taint := range node.Spec.Taints {
 		if taint.Key == taintSpec.Key && taint.Effect == taintSpec.Effect {
 			return true
@@ -240,7 +240,7 @@ func (r *ReadinessGateController) hasTaintBySpec(node *corev1.Node, taintSpec co
 }
 
 // addTaintBySpec adds a taint to a node.
-func (r *ReadinessGateController) addTaintBySpec(ctx context.Context, node *corev1.Node, taintSpec corev1.Taint) error {
+func (r *RuleReadinessController) addTaintBySpec(ctx context.Context, node *corev1.Node, taintSpec corev1.Taint) error {
 	patch := client.StrategicMergeFrom(node.DeepCopy())
 	node.Spec.Taints = append(node.Spec.Taints, corev1.Taint{
 		Key:    taintSpec.Key,
@@ -251,7 +251,7 @@ func (r *ReadinessGateController) addTaintBySpec(ctx context.Context, node *core
 }
 
 // removeTaintBySpec removes a taint from a node.
-func (r *ReadinessGateController) removeTaintBySpec(ctx context.Context, node *corev1.Node, taintSpec corev1.Taint) error {
+func (r *RuleReadinessController) removeTaintBySpec(ctx context.Context, node *corev1.Node, taintSpec corev1.Taint) error {
 	patch := client.StrategicMergeFrom(node.DeepCopy())
 	var newTaints []corev1.Taint
 	for _, taint := range node.Spec.Taints {
@@ -264,7 +264,7 @@ func (r *ReadinessGateController) removeTaintBySpec(ctx context.Context, node *c
 }
 
 // Bootstrap completion tracking.
-func (r *ReadinessGateController) isBootstrapCompleted(nodeName, ruleName string) bool {
+func (r *RuleReadinessController) isBootstrapCompleted(nodeName, ruleName string) bool {
 	// Check node annotation
 	node := &corev1.Node{}
 	if err := r.Get(context.TODO(), client.ObjectKey{Name: nodeName}, node); err != nil {
@@ -276,7 +276,7 @@ func (r *ReadinessGateController) isBootstrapCompleted(nodeName, ruleName string
 	return exists
 }
 
-func (r *ReadinessGateController) markBootstrapCompleted(ctx context.Context, nodeName, ruleName string) {
+func (r *RuleReadinessController) markBootstrapCompleted(ctx context.Context, nodeName, ruleName string) {
 	log := ctrl.LoggerFrom(ctx)
 
 	annotationKey := fmt.Sprintf("readiness.k8s.io/bootstrap-completed-%s", ruleName)
@@ -313,7 +313,7 @@ func (r *ReadinessGateController) markBootstrapCompleted(ctx context.Context, no
 }
 
 // recordNodeFailure records a failure for a specific node.
-func (r *ReadinessGateController) recordNodeFailure(
+func (r *RuleReadinessController) recordNodeFailure(
 	rule *readinessv1alpha1.NodeReadinessRule,
 	nodeName, reason, message string,
 ) {

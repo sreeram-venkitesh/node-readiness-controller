@@ -102,7 +102,7 @@ var _ = Describe("Node Controller", func() {
 	Context("when reconciling a node", func() {
 		var (
 			ctx                 context.Context
-			readinessController *ReadinessGateController
+			readinessController *RuleReadinessController
 			nodeReconciler      *NodeReconciler
 			fakeClientset       *fake.Clientset
 			node                *corev1.Node
@@ -114,7 +114,7 @@ var _ = Describe("Node Controller", func() {
 			ctx = context.Background()
 
 			fakeClientset = fake.NewSimpleClientset()
-			readinessController = &ReadinessGateController{
+			readinessController = &RuleReadinessController{
 				Client:    k8sClient,
 				Scheme:    k8sClient.Scheme(),
 				clientset: fakeClientset,
@@ -364,7 +364,7 @@ var _ = Describe("Node Controller", func() {
 
 		var (
 			ctx                 context.Context
-			readinessController *ReadinessGateController
+			readinessController *RuleReadinessController
 			nodeReconciler      *NodeReconciler
 			fakeClientset       *fake.Clientset
 			node                *corev1.Node
@@ -376,7 +376,7 @@ var _ = Describe("Node Controller", func() {
 			ctx = context.Background()
 
 			fakeClientset = fake.NewSimpleClientset()
-			readinessController = &ReadinessGateController{
+			readinessController = &RuleReadinessController{
 				Client:    k8sClient,
 				Scheme:    k8sClient.Scheme(),
 				clientset: fakeClientset,

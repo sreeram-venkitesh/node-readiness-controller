@@ -40,7 +40,7 @@ const (
 var _ = Describe("NodeReadinessRule Controller", func() {
 	var (
 		ctx                 context.Context
-		readinessController *ReadinessGateController
+		readinessController *RuleReadinessController
 		ruleReconciler      *RuleReconciler
 		nodeReconciler      *NodeReconciler
 		scheme              *runtime.Scheme
@@ -54,7 +54,7 @@ var _ = Describe("NodeReadinessRule Controller", func() {
 		Expect(corev1.AddToScheme(scheme)).To(Succeed())
 
 		fakeClientset = fake.NewSimpleClientset()
-		readinessController = &ReadinessGateController{
+		readinessController = &RuleReadinessController{
 			Client:    k8sClient,
 			Scheme:    scheme,
 			clientset: fakeClientset,
